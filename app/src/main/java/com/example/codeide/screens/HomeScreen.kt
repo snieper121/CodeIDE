@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.codeide.ui.AppDrawer
 import com.example.codeide.ui.AppTopAppBar
 import com.example.codeide.ui.theme.CodeIDETheme
+import com.example.codeide.viewmodels.FileManagerViewModel 
 
 import kotlinx.coroutines.launch
 import java.io.File
