@@ -1,26 +1,23 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.codeide">
 
     <application
         android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="CodeIDE"
         android:supportsRtl="true"
-        android:theme="@style/Theme.CodeIDE"
-        tools:targetApi="31">
+        android:theme="@android:style/Theme.DeviceDefault.NoActionBar"> 
+        <!-- Мы используем стандартную тему без ActionBar, так как весь UI рисует Compose -->
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.CodeIDE">
+            android:label="CodeIDE">
+            <!-- Мы убрали ссылку на XML-тему и здесь -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
     </application>
+
 </manifest>
