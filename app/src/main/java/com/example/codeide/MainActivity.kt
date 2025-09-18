@@ -3,10 +3,8 @@ package com.example.codeide
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.codeide.screens.HomeScreen // Импортируем наш HomeScreen
 import com.example.codeide.ui.theme.CodeIDETheme
 
 class MainActivity : ComponentActivity() {
@@ -14,14 +12,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             CodeIDETheme {
-                // Surface - это контейнер, использующий цвет фона из темы
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    // Пока что экран пустой
-                }
+                HomeScreen() // Вызываем наш главный экран
             }
         }
     }
 }
+
+// Preview для MainActivity больше не нужен, так как HomeScreen имеет свой Preview
+// @Preview(showBackground = true)
+// @Composable
+// fun DefaultPreview() {
+//     CodeIDETheme {
+//         HomeScreen()
+//     }
+// }
