@@ -1,16 +1,18 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    // Применяем плагин компилятора Compose к нашему модулю
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
     namespace = "com.example.codeide"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.codeide"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -29,19 +31,21 @@ android {
             )
         }
     }
+    
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+
+    // БЛОК kotlinOptions ПОЛНОСТЬЮ УДАЛЁН
+
     buildFeatures {
-        compose = true
+        compose = true // Этот флаг всё ещё нужен для интеграции AGP с Compose
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
-    }
+
+    // БЛОК composeOptions ПОЛНОСТЬЮ УДАЛЁН
+    // Теперь всё настраивается через новый плагин
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -50,18 +54,21 @@ android {
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2024.05.00")
+    // Обновляем версию BOM до последней
+    val composeBom = platform("androidx.compose:compose-bom:2025.09.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.2")
-    implementation("androidx.activity:activity-compose:1.9.0")
+    // Версии этих библиотек теперь управляются через BOM
+    implementation("androidx.core:core-ktx:1.13.1") // Можно оставить с явной версией, BOM на него не влияет
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.2") // Аналогично
+    implementation("androidx.activity:activity-compose") // Версия из BOM
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
 
+    // Тестовые зависимости
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
