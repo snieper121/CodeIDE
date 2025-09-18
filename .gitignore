@@ -1,0 +1,27 @@
+# CodeIDE/.gitignore
+
+# Скомпилированный код
+/build
+/app/build
+
+# Локальные файлы конфигурации
+# (даже если мы не используем IDE, это хорошая практика)
+.idea/
+.gradle/
+local.properties
+*.iml
+
+# Логи
+*.log
+
+# Файлы Gradle
+.gradletasknamecache
+gradle-app.setting
+
+# Файлы Keystore (КЛЮЧЕВОЙ МОМЕНТ!)
+# Никогда не добавляйте ключи подписи в Git
+*.jks
+*.keystore
+
+# Файлы окружения Android Studio
+.cxx/
