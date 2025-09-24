@@ -3,14 +3,14 @@
 name: Android CI Build
 
 # Триггеры для запуска:
-# - push в ветку main
-# - pull request в ветку main
+# - push в любую ветку
+# - pull request в любую ветку
 # - ручной запуск (workflow_dispatch)
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "**" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "**" ]
   workflow_dispatch:
 
 jobs:
