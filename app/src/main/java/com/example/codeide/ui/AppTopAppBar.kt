@@ -2,6 +2,7 @@ package com.example.codeide.ui
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -12,7 +13,8 @@ import com.example.codeide.ui.theme.CodeIDETheme
 @Composable
 fun AppTopAppBar(
     modifier: Modifier = Modifier,
-    onMenuClick: () -> Unit // Функция, которая будет вызвана при клике на гамбургер
+    onMenuClick: () -> Unit, // Функция, которая будет вызвана при клике на гамбургер
+    onMoreClick: () -> Unit = {} // Функция для кнопки троеточие
 ) {
     TopAppBar(
         title = { Text("Code / IDE") },
@@ -24,10 +26,19 @@ fun AppTopAppBar(
                 )
             }
         },
+        actions = {
+            IconButton(onClick = onMoreClick) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "Больше опций"
+                )
+            }
+        },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.primary,
             titleContentColor = MaterialTheme.colorScheme.onPrimary,
-            navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+            navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+            actionIconContentColor = MaterialTheme.colorScheme.onPrimary
         ),
         modifier = modifier
     )
@@ -37,6 +48,6 @@ fun AppTopAppBar(
 @Composable
 fun AppTopAppBarPreview() {
     CodeIDETheme {
-        AppTopAppBar(onMenuClick = {})
+        AppTopAppBar(onMenuClick = {}, onMoreClick = {})
     }
 }

@@ -23,7 +23,8 @@ fun AppDrawer(
     modifier: Modifier = Modifier,
     files: List<File>, // Принимаем список файлов
     onFileClick: (File) -> Unit, // Функция для обработки клика
-    onCloseDrawer: () -> Unit
+    onCloseDrawer: () -> Unit,
+    onSelectFolder: () -> Unit = {} // Функция для выбора папки
 ) {
     ModalDrawerSheet(modifier = modifier) {
         // Заголовок
@@ -32,6 +33,17 @@ fun AppDrawer(
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(16.dp)
         )
+        
+        // Кнопка выбора папки
+        Button(
+            onClick = onSelectFolder,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Text("📁 Выбрать папку")
+        }
+        
         Divider() // Разделитель
 
         // Список файлов с прокруткой
@@ -77,6 +89,6 @@ fun AppDrawerPreview() {
         File("/example/folder2")
     )
     CodeIDETheme {
-        AppDrawer(files = sampleFiles, onFileClick = {}, onCloseDrawer = {})
+        AppDrawer(files = sampleFiles, onFileClick = {}, onCloseDrawer = {}, onSelectFolder = {})
     }
 }

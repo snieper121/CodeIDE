@@ -95,6 +95,7 @@ fun HomeScreen(
 */
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -147,6 +148,22 @@ fun HomeScreen(
         }
     )
 
+    // Launcher для системного диалога выбора папки
+    val folderPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                // Получаем путь к выбранной папке
+                val folderPath = uri.path
+                if (folderPath != null) {
+                    val selectedFolder = File(folderPath)
+                    fileManagerViewModel.loadFiles(selectedFolder)
+                }
+            }
+        }
+    }
+
     fun checkAndRequestPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val isManager = Environment.isExternalStorageManager()
@@ -161,11 +178,18 @@ fun HomeScreen(
         }
     }
 
-    LaunchedEffect(hasPermission) {
-        if (hasPermission) {
-            fileManagerViewModel.loadFiles(Environment.getExternalStorageDirectory())
-        }
+    // Функция для открытия системного диалога выбора папки
+    fun openFolderPicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        folderPickerLauncher.launch(intent)
     }
+
+    // Убираем автоматическую загрузку файлов при старте
+    // LaunchedEffect(hasPermission) {
+    //     if (hasPermission) {
+    //         fileManagerViewModel.loadFiles(Environment.getExternalStorageDirectory())
+    //     }
+    // }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -180,7 +204,8 @@ fun HomeScreen(
                 },
                 onCloseDrawer = {
                     scope.launch { drawerState.close() }
-                }
+                },
+                onSelectFolder = { openFolderPicker() }
             )
         }
     ) {
@@ -190,6 +215,9 @@ fun HomeScreen(
                     onMenuClick = {
                         checkAndRequestPermissions()
                         scope.launch { drawerState.open() }
+                    },
+                    onMoreClick = {
+                        // Дополнительные опции (можно добавить позже)
                     }
                 )
             }
@@ -206,7 +234,16 @@ fun HomeScreen(
                             Text(" Предоставить доступ к файлам ")
                         }
                     }
+                } else if (fileList.isEmpty()) {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        Text(
+                            text = "Нажмите на меню (☰) и выберите папку для просмотра файлов",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
                 }
+                // Здесь будет основной контент для отображения файлов
             }
         }
     }
