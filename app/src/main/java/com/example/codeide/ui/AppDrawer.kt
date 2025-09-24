@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.codeide.ui.theme.CodeIDETheme
+import com.example.codeide.utils.DocumentFileInfo
 import java.io.File
 
 @Composable
@@ -28,7 +29,9 @@ fun AppDrawer(
     onSelectFolder: () -> Unit = {}, // Функция для выбора папки
     currentFolder: File? = null, // Текущая папка
     rootFolderName: String = "", // Имя корневой папки
-    onNavigateToRoot: () -> Unit = {} // Переход к корневой папке
+    onNavigateToRoot: () -> Unit = {}, // Переход к корневой папке
+    documentFiles: List<DocumentFileInfo> = emptyList(), // DocumentFile список
+    onDocumentFileClick: (DocumentFileInfo) -> Unit = {} // Обработка клика на DocumentFile
 ) {
     ModalDrawerSheet(modifier = modifier) {
         // Заголовок
@@ -74,8 +77,15 @@ fun AppDrawer(
 
         // Список файлов с прокруткой
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(files) { file ->
-                FileListItem(file = file, onClick = { onFileClick(file) })
+            // Отображаем DocumentFile если есть, иначе обычные файлы
+            if (documentFiles.isNotEmpty()) {
+                items(documentFiles) { docFile ->
+                    DocumentFileListItem(docFile = docFile, onClick = { onDocumentFileClick(docFile) })
+                }
+            } else {
+                items(files) { file ->
+                    FileListItem(file = file, onClick = { onFileClick(file) })
+                }
             }
         }
     }
@@ -103,6 +113,49 @@ fun FileListItem(
             text = file.name,
             style = MaterialTheme.typography.bodyLarge
         )
+    }
+}
+
+@Composable
+fun DocumentFileListItem(
+    docFile: DocumentFileInfo,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = if (docFile.isDirectory) Icons.Default.Folder else Icons.Default.Description,
+            contentDescription = if (docFile.isDirectory) "Папка" else "Файл",
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column {
+            Text(
+                text = docFile.name,
+                style = MaterialTheme.typography.bodyLarge
+            )
+            if (!docFile.isDirectory && docFile.size > 0) {
+                Text(
+                    text = formatFileSize(docFile.size),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+private fun formatFileSize(bytes: Long): String {
+    return when {
+        bytes < 1024 -> "$bytes B"
+        bytes < 1024 * 1024 -> "${bytes / 1024} KB"
+        bytes < 1024 * 1024 * 1024 -> "${bytes / (1024 * 1024)} MB"
+        else -> "${bytes / (1024 * 1024 * 1024)} GB"
     }
 }
 

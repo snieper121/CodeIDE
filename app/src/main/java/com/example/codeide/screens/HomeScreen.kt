@@ -37,6 +37,7 @@ fun HomeScreen(
     val context = LocalContext.current
     val fileList by fileManagerViewModel.files.collectAsState()
     val currentFolder by fileManagerViewModel.currentFolder.collectAsState()
+    val documentFiles by fileManagerViewModel.documentFiles.collectAsState()
     val rootUri by fileManagerViewModel.rootUri.collectAsState()
     val rootFolderName by fileManagerViewModel.rootFolderName.collectAsState()
 
@@ -117,9 +118,16 @@ fun HomeScreen(
                 onSelectFolder = { openFolderPicker() },
                 currentFolder = currentFolder,
                 rootFolderName = rootFolderName,
+                documentFiles = documentFiles,
+                onDocumentFileClick = { docFile ->
+                    if (docFile.isDirectory) {
+                        fileManagerViewModel.navigateToFolder(context, docFile.uri)
+                    }
+                    scope.launch { drawerState.close() }
+                },
                 onNavigateToRoot = {
                     rootUri?.let { uri ->
-                        fileManagerViewModel.navigateToFolder(context, uri)
+                        fileManagerViewModel.setRootFolder(context, uri)
                     }
                     scope.launch { drawerState.close() }
                 }
@@ -151,7 +159,7 @@ fun HomeScreen(
                             Text(" Предоставить доступ к файлам ")
                         }
                     }
-                } else if (fileList.isEmpty()) {
+                } else if (fileList.isEmpty() && documentFiles.isEmpty() && rootFolderName.isEmpty()) {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                         Text(
                             text = "Нажмите на меню (☰) и выберите папку для просмотра файлов",

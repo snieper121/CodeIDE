@@ -52,29 +52,42 @@ class FileManagerViewModel : ViewModel() {
     
     fun setRootFolder(context: Context, uri: Uri) {
         viewModelScope.launch {
-            // Сохраняем корневой URI
-            _rootUri.value = uri
-            
-            // Получаем имя корневой папки
-            _rootFolderName.value = DocumentFileUtils.getRootFolderName(context, uri)
-            
-            // Получаем соответствующий File объект и загружаем файлы
-            val rootFile = DocumentFileUtils.getFileFromUri(uri)
-            if (rootFile != null && rootFile.exists()) {
-                loadFiles(rootFile)
+            try {
+                // Сохраняем корневой URI
+                _rootUri.value = uri
+                
+                // Получаем имя корневой папки
+                _rootFolderName.value = DocumentFileUtils.getRootFolderName(context, uri)
+                
+                // Загружаем файлы из корневой папки через DocumentFile API
+                val documentFilesList = DocumentFileUtils.getFilesFromDocumentFile(context, uri)
+                _documentFiles.value = documentFilesList
+                
+                // Очищаем обычные File объекты, так как теперь работаем с DocumentFile
+                _files.value = emptyList()
+                _currentFolder.value = null
+            } catch (e: Exception) {
+                // В случае ошибки очищаем все
+                clearFiles()
             }
-            
-            // Очищаем DocumentFile список
-            _documentFiles.value = emptyList()
         }
     }
     
     fun navigateToFolder(context: Context, uri: Uri) {
         viewModelScope.launch {
-            // Получаем соответствующий File объект и загружаем файлы
-            val folderFile = DocumentFileUtils.getFileFromUri(uri)
-            if (folderFile != null && folderFile.exists()) {
-                loadFiles(folderFile)
+            try {
+                // Загружаем файлы из выбранной папки через DocumentFile API
+                val documentFilesList = DocumentFileUtils.getFilesFromDocumentFile(context, uri)
+                _documentFiles.value = documentFilesList
+                
+                // Очищаем обычные File объекты
+                _files.value = emptyList()
+                _currentFolder.value = null
+            } catch (e: Exception) {
+                // В случае ошибки возвращаемся к корневой папке
+                _rootUri.value?.let { rootUri ->
+                    setRootFolder(context, rootUri)
+                }
             }
         }
     }
