@@ -37,8 +37,6 @@ fun HomeScreen(
     val context = LocalContext.current
     val fileList by fileManagerViewModel.files.collectAsState()
     val currentFolder by fileManagerViewModel.currentFolder.collectAsState()
-    val documentFiles by fileManagerViewModel.documentFiles.collectAsState()
-    val currentUri by fileManagerViewModel.currentUri.collectAsState()
 
     var hasPermission by remember { mutableStateOf(false) }
 
@@ -69,8 +67,40 @@ fun HomeScreen(
                 Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
             
-            // Используем новый метод для загрузки файлов из URI
-            fileManagerViewModel.loadFilesFromUri(context, selectedUri)
+            // Простая реализация: определяем тип папки по URI и загружаем соответствующую системную папку
+            when {
+                selectedUri.toString().contains("Downloads") -> {
+                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    if (downloadsDir != null && downloadsDir.exists()) {
+                        fileManagerViewModel.loadFiles(downloadsDir)
+                    }
+                }
+                selectedUri.toString().contains("Documents") -> {
+                    val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+                    if (documentsDir != null && documentsDir.exists()) {
+                        fileManagerViewModel.loadFiles(documentsDir)
+                    }
+                }
+                selectedUri.toString().contains("Pictures") -> {
+                    val picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                    if (picturesDir != null && picturesDir.exists()) {
+                        fileManagerViewModel.loadFiles(picturesDir)
+                    }
+                }
+                selectedUri.toString().contains("Music") -> {
+                    val musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+                    if (musicDir != null && musicDir.exists()) {
+                        fileManagerViewModel.loadFiles(musicDir)
+                    }
+                }
+                else -> {
+                    // Для других папок используем Downloads по умолчанию
+                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    if (downloadsDir != null && downloadsDir.exists()) {
+                        fileManagerViewModel.loadFiles(downloadsDir)
+                    }
+                }
+            }
         }
     }
 
@@ -115,14 +145,7 @@ fun HomeScreen(
                     scope.launch { drawerState.close() }
                 },
                 onSelectFolder = { openFolderPicker() },
-                currentFolder = currentFolder,
-                documentFiles = documentFiles,
-                onDocumentFileClick = { docFile ->
-                    if (docFile.isDirectory) {
-                        fileManagerViewModel.loadFilesFromUri(context, docFile.uri)
-                    }
-                    scope.launch { drawerState.close() }
-                }
+                currentFolder = currentFolder
             )
         }
     ) {
