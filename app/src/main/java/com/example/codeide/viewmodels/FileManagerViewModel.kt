@@ -14,9 +14,15 @@ class FileManagerViewModel : ViewModel() {
     private val _files = MutableStateFlow<List<File>>(emptyList())
     // Публичный StateFlow, на который будет подписываться UI (только для чтения)
     val files: StateFlow<List<File>> = _files.asStateFlow()
-
+    
+    private val _currentFolder = MutableStateFlow<File?>(null)
+    val currentFolder: StateFlow<File?> = _currentFolder.asStateFlow()
+    
+    // Обновить loadFiles:
     fun loadFiles(directory: File) {
         viewModelScope.launch {
+            _currentFolder.value = directory
+            // остальная логика...
             if (directory.exists() && directory.isDirectory) {
                 // Получаем список файлов, обрабатываем случай, если он null
                 val fileList = directory.listFiles()?.toList() ?: emptyList()
@@ -28,3 +34,4 @@ class FileManagerViewModel : ViewModel() {
         }
     }
 }
+

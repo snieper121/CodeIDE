@@ -21,6 +21,7 @@ import java.io.File
 @Composable
 fun AppDrawer(
     modifier: Modifier = Modifier,
+    onSelectFolder: () -> Unit
     files: List<File>, // Принимаем список файлов
     onFileClick: (File) -> Unit, // Функция для обработки клика
     onCloseDrawer: () -> Unit
@@ -33,7 +34,16 @@ fun AppDrawer(
             modifier = Modifier.padding(16.dp)
         )
         Divider() // Разделитель
-
+        
+        Button(
+            onClick = onSelectFolder,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Text("📁 Выбрать папку")
+        }
+        
         // Список файлов с прокруткой
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(files) { file ->
