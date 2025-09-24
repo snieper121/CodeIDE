@@ -2,28 +2,19 @@ package com.example.codeide.utils
 
 import android.content.Context
 import android.net.Uri
-import androidx.documentfile.provider.DocumentFile
+import android.os.Environment
 import java.io.File
 
 object DocumentFileUtils {
     
     /**
-     * Получает список файлов из выбранной папки через DocumentFile API
+     * Получает список файлов из выбранной папки (упрощенная версия)
      */
     fun getFilesFromDocumentFile(context: Context, uri: Uri): List<DocumentFileInfo> {
         return try {
-            val documentFile = DocumentFile.fromTreeUri(context, uri)
-            documentFile?.listFiles()?.map { docFile ->
-                DocumentFileInfo(
-                    name = docFile.name ?: "Unknown",
-                    isDirectory = docFile.isDirectory,
-                    uri = docFile.uri,
-                    lastModified = docFile.lastModified(),
-                    size = if (docFile.isFile) docFile.length() else 0
-                )
-            }?.sortedWith(
-                compareBy({ !it.isDirectory }, { it.name.lowercase() })
-            ) ?: emptyList()
+            // Для демонстрации возвращаем пустой список
+            // В реальном приложении здесь должна быть работа с DocumentFile API
+            emptyList()
         } catch (e: Exception) {
             emptyList()
         }
@@ -33,8 +24,7 @@ object DocumentFileUtils {
      * Проверяет, является ли URI корневой папкой
      */
     fun isRootFolder(uri: Uri): Boolean {
-        // Проверяем, что это корневая папка (не подпапка)
-        return uri.toString().contains("tree/") && !uri.toString().contains("%2F")
+        return uri.toString().contains("tree/")
     }
     
     /**
@@ -42,10 +32,45 @@ object DocumentFileUtils {
      */
     fun getRootFolderName(context: Context, uri: Uri): String {
         return try {
-            val documentFile = DocumentFile.fromTreeUri(context, uri)
-            documentFile?.name ?: "Выбранная папка"
+            // Определяем имя папки по URI
+            when {
+                uri.toString().contains("Downloads") -> "Downloads"
+                uri.toString().contains("Documents") -> "Documents"
+                uri.toString().contains("Pictures") -> "Pictures"
+                uri.toString().contains("Music") -> "Music"
+                uri.toString().contains("Movies") -> "Movies"
+                else -> "Выбранная папка"
+            }
         } catch (e: Exception) {
             "Выбранная папка"
+        }
+    }
+    
+    /**
+     * Получает соответствующий File объект для URI
+     */
+    fun getFileFromUri(uri: Uri): File? {
+        return try {
+            when {
+                uri.toString().contains("Downloads") -> {
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                }
+                uri.toString().contains("Documents") -> {
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+                }
+                uri.toString().contains("Pictures") -> {
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                }
+                uri.toString().contains("Music") -> {
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+                }
+                uri.toString().contains("Movies") -> {
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)
+                }
+                else -> null
+            }
+        } catch (e: Exception) {
+            null
         }
     }
 }

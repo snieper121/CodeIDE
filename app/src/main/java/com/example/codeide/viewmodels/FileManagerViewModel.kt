@@ -58,21 +58,24 @@ class FileManagerViewModel : ViewModel() {
             // Получаем имя корневой папки
             _rootFolderName.value = DocumentFileUtils.getRootFolderName(context, uri)
             
-            // Загружаем файлы из корневой папки
-            val filesList = DocumentFileUtils.getFilesFromDocumentFile(context, uri)
-            _documentFiles.value = filesList
+            // Получаем соответствующий File объект и загружаем файлы
+            val rootFile = DocumentFileUtils.getFileFromUri(uri)
+            if (rootFile != null && rootFile.exists()) {
+                loadFiles(rootFile)
+            }
             
-            // Очищаем обычные файлы, так как теперь работаем с DocumentFile
-            _files.value = emptyList()
-            _currentFolder.value = null
+            // Очищаем DocumentFile список
+            _documentFiles.value = emptyList()
         }
     }
     
     fun navigateToFolder(context: Context, uri: Uri) {
         viewModelScope.launch {
-            // Загружаем файлы из выбранной папки
-            val filesList = DocumentFileUtils.getFilesFromDocumentFile(context, uri)
-            _documentFiles.value = filesList
+            // Получаем соответствующий File объект и загружаем файлы
+            val folderFile = DocumentFileUtils.getFileFromUri(uri)
+            if (folderFile != null && folderFile.exists()) {
+                loadFiles(folderFile)
+            }
         }
     }
     

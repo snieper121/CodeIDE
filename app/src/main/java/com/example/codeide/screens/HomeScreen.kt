@@ -37,7 +37,6 @@ fun HomeScreen(
     val context = LocalContext.current
     val fileList by fileManagerViewModel.files.collectAsState()
     val currentFolder by fileManagerViewModel.currentFolder.collectAsState()
-    val documentFiles by fileManagerViewModel.documentFiles.collectAsState()
     val rootUri by fileManagerViewModel.rootUri.collectAsState()
     val rootFolderName by fileManagerViewModel.rootFolderName.collectAsState()
 
@@ -117,14 +116,7 @@ fun HomeScreen(
                 },
                 onSelectFolder = { openFolderPicker() },
                 currentFolder = currentFolder,
-                documentFiles = documentFiles,
                 rootFolderName = rootFolderName,
-                onDocumentFileClick = { docFile ->
-                    if (docFile.isDirectory) {
-                        fileManagerViewModel.navigateToFolder(context, docFile.uri)
-                    }
-                    scope.launch { drawerState.close() }
-                },
                 onNavigateToRoot = {
                     rootUri?.let { uri ->
                         fileManagerViewModel.navigateToFolder(context, uri)
