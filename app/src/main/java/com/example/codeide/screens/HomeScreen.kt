@@ -57,15 +57,42 @@ fun HomeScreen(
 
     // Launcher для системного диалога выбора папки
     val folderPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.data?.let { uri ->
-                // Получаем путь к выбранной папке
-                val folderPath = uri.path
-                if (folderPath != null) {
-                    val selectedFolder = File(folderPath)
-                    fileManagerViewModel.loadFiles(selectedFolder)
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        uri?.let { selectedUri ->
+            // Предоставляем постоянный доступ к выбранной папке
+            context.contentResolver.takePersistableUriPermission(
+                selectedUri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+            
+            // Сохраняем выбранный URI для дальнейшего использования
+            // Пока используем стандартные папки для демонстрации
+            when {
+                selectedUri.toString().contains("Downloads") -> {
+                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    if (downloadsDir != null && downloadsDir.exists()) {
+                        fileManagerViewModel.loadFiles(downloadsDir)
+                    }
+                }
+                selectedUri.toString().contains("Documents") -> {
+                    val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+                    if (documentsDir != null && documentsDir.exists()) {
+                        fileManagerViewModel.loadFiles(documentsDir)
+                    }
+                }
+                selectedUri.toString().contains("Pictures") -> {
+                    val picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                    if (picturesDir != null && picturesDir.exists()) {
+                        fileManagerViewModel.loadFiles(picturesDir)
+                    }
+                }
+                else -> {
+                    // Для других папок используем Downloads по умолчанию
+                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    if (downloadsDir != null && downloadsDir.exists()) {
+                        fileManagerViewModel.loadFiles(downloadsDir)
+                    }
                 }
             }
         }
@@ -87,8 +114,7 @@ fun HomeScreen(
 
     // Функция для открытия системного диалога выбора папки
     fun openFolderPicker() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-        folderPickerLauncher.launch(intent)
+        folderPickerLauncher.launch(null)
     }
 
     // Убираем автоматическую загрузку файлов при старте

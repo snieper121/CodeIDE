@@ -16,6 +16,8 @@ fun AppTopAppBar(
     onMenuClick: () -> Unit, // Функция, которая будет вызвана при клике на гамбургер
     onMoreClick: () -> Unit = {} // Функция для кнопки троеточие
 ) {
+    var expanded by remember { mutableStateOf(false) }
+    
     TopAppBar(
         title = { Text("Code / IDE") },
         navigationIcon = {
@@ -27,10 +29,26 @@ fun AppTopAppBar(
             }
         },
         actions = {
-            IconButton(onClick = onMoreClick) {
+            IconButton(onClick = { expanded = true }) {
                 Icon(
                     imageVector = Icons.Default.MoreVert,
                     contentDescription = "Больше опций"
+                )
+            }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("Настройки") },
+                    onClick = {
+                        expanded = false
+                        onMoreClick()
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("О приложении") },
+                    onClick = { expanded = false }
                 )
             }
         },
