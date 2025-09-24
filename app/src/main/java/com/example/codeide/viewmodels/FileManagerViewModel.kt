@@ -1,7 +1,11 @@
 package com.example.codeide.viewmodels
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.codeide.utils.DocumentFileInfo
+import com.example.codeide.utils.DocumentFileUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +22,18 @@ class FileManagerViewModel : ViewModel() {
     // Текущая выбранная папка
     private val _currentFolder = MutableStateFlow<File?>(null)
     val currentFolder: StateFlow<File?> = _currentFolder.asStateFlow()
+    
+    // Текущий корневой URI (выбранная папка)
+    private val _rootUri = MutableStateFlow<Uri?>(null)
+    val rootUri: StateFlow<Uri?> = _rootUri.asStateFlow()
+    
+    // Список файлов из DocumentFile
+    private val _documentFiles = MutableStateFlow<List<DocumentFileInfo>>(emptyList())
+    val documentFiles: StateFlow<List<DocumentFileInfo>> = _documentFiles.asStateFlow()
+    
+    // Имя корневой папки
+    private val _rootFolderName = MutableStateFlow<String>("")
+    val rootFolderName: StateFlow<String> = _rootFolderName.asStateFlow()
 
     fun loadFiles(directory: File) {
         viewModelScope.launch {
@@ -34,9 +50,38 @@ class FileManagerViewModel : ViewModel() {
         }
     }
     
+    fun setRootFolder(context: Context, uri: Uri) {
+        viewModelScope.launch {
+            // Сохраняем корневой URI
+            _rootUri.value = uri
+            
+            // Получаем имя корневой папки
+            _rootFolderName.value = DocumentFileUtils.getRootFolderName(context, uri)
+            
+            // Загружаем файлы из корневой папки
+            val filesList = DocumentFileUtils.getFilesFromDocumentFile(context, uri)
+            _documentFiles.value = filesList
+            
+            // Очищаем обычные файлы, так как теперь работаем с DocumentFile
+            _files.value = emptyList()
+            _currentFolder.value = null
+        }
+    }
+    
+    fun navigateToFolder(context: Context, uri: Uri) {
+        viewModelScope.launch {
+            // Загружаем файлы из выбранной папки
+            val filesList = DocumentFileUtils.getFilesFromDocumentFile(context, uri)
+            _documentFiles.value = filesList
+        }
+    }
+    
     // Функция для очистки списка файлов
     fun clearFiles() {
         _files.value = emptyList()
+        _documentFiles.value = emptyList()
         _currentFolder.value = null
+        _rootUri.value = null
+        _rootFolderName.value = ""
     }
 }

@@ -2,46 +2,50 @@ package com.example.codeide.utils
 
 import android.content.Context
 import android.net.Uri
+import androidx.documentfile.provider.DocumentFile
 import java.io.File
 
 object DocumentFileUtils {
     
     /**
-     * Получает список файлов из URI (упрощенная версия без DocumentFile)
+     * Получает список файлов из выбранной папки через DocumentFile API
      */
     fun getFilesFromDocumentFile(context: Context, uri: Uri): List<DocumentFileInfo> {
         return try {
-            // Для демонстрации возвращаем пустой список
-            // В реальном приложении здесь должна быть работа с DocumentFile API
-            emptyList()
+            val documentFile = DocumentFile.fromTreeUri(context, uri)
+            documentFile?.listFiles()?.map { docFile ->
+                DocumentFileInfo(
+                    name = docFile.name ?: "Unknown",
+                    isDirectory = docFile.isDirectory,
+                    uri = docFile.uri,
+                    lastModified = docFile.lastModified(),
+                    size = if (docFile.isFile) docFile.length() else 0
+                )
+            }?.sortedWith(
+                compareBy({ !it.isDirectory }, { it.name.lowercase() })
+            ) ?: emptyList()
         } catch (e: Exception) {
             emptyList()
         }
     }
     
     /**
-     * Конвертирует URI в обычный File для совместимости
+     * Проверяет, является ли URI корневой папкой
      */
-    fun convertToFile(context: Context, uri: Uri): File? {
+    fun isRootFolder(uri: Uri): Boolean {
+        // Проверяем, что это корневая папка (не подпапка)
+        return uri.toString().contains("tree/") && !uri.toString().contains("%2F")
+    }
+    
+    /**
+     * Получает имя корневой папки из URI
+     */
+    fun getRootFolderName(context: Context, uri: Uri): String {
         return try {
-            // Для системных папок пытаемся получить File объект
-            when {
-                uri.toString().contains("Downloads") -> {
-                    android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS)
-                }
-                uri.toString().contains("Documents") -> {
-                    android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOCUMENTS)
-                }
-                uri.toString().contains("Pictures") -> {
-                    android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_PICTURES)
-                }
-                else -> {
-                    // Для других папок возвращаем null
-                    null
-                }
-            }
+            val documentFile = DocumentFile.fromTreeUri(context, uri)
+            documentFile?.name ?: "Выбранная папка"
         } catch (e: Exception) {
-            null
+            "Выбранная папка"
         }
     }
 }
