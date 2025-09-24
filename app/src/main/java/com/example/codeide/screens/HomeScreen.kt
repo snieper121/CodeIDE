@@ -36,6 +36,9 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val fileList by fileManagerViewModel.files.collectAsState()
+    val currentFolder by fileManagerViewModel.currentFolder.collectAsState()
+    val documentFiles by fileManagerViewModel.documentFiles.collectAsState()
+    val currentUri by fileManagerViewModel.currentUri.collectAsState()
 
     var hasPermission by remember { mutableStateOf(false) }
 
@@ -66,35 +69,8 @@ fun HomeScreen(
                 Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
             
-            // Сохраняем выбранный URI для дальнейшего использования
-            // Пока используем стандартные папки для демонстрации
-            when {
-                selectedUri.toString().contains("Downloads") -> {
-                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                    if (downloadsDir != null && downloadsDir.exists()) {
-                        fileManagerViewModel.loadFiles(downloadsDir)
-                    }
-                }
-                selectedUri.toString().contains("Documents") -> {
-                    val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-                    if (documentsDir != null && documentsDir.exists()) {
-                        fileManagerViewModel.loadFiles(documentsDir)
-                    }
-                }
-                selectedUri.toString().contains("Pictures") -> {
-                    val picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                    if (picturesDir != null && picturesDir.exists()) {
-                        fileManagerViewModel.loadFiles(picturesDir)
-                    }
-                }
-                else -> {
-                    // Для других папок используем Downloads по умолчанию
-                    val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                    if (downloadsDir != null && downloadsDir.exists()) {
-                        fileManagerViewModel.loadFiles(downloadsDir)
-                    }
-                }
-            }
+            // Используем новый метод для загрузки файлов из URI
+            fileManagerViewModel.loadFilesFromUri(context, selectedUri)
         }
     }
 
@@ -138,7 +114,15 @@ fun HomeScreen(
                 onCloseDrawer = {
                     scope.launch { drawerState.close() }
                 },
-                onSelectFolder = { openFolderPicker() }
+                onSelectFolder = { openFolderPicker() },
+                currentFolder = currentFolder,
+                documentFiles = documentFiles,
+                onDocumentFileClick = { docFile ->
+                    if (docFile.isDirectory) {
+                        fileManagerViewModel.loadFilesFromUri(context, docFile.uri)
+                    }
+                    scope.launch { drawerState.close() }
+                }
             )
         }
     ) {

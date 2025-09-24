@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.codeide.ui.theme.CodeIDETheme
+import com.example.codeide.utils.DocumentFileInfo
 import java.io.File
 
 @Composable
@@ -24,7 +25,10 @@ fun AppDrawer(
     files: List<File>, // Принимаем список файлов
     onFileClick: (File) -> Unit, // Функция для обработки клика
     onCloseDrawer: () -> Unit,
-    onSelectFolder: () -> Unit = {} // Функция для выбора папки
+    onSelectFolder: () -> Unit = {}, // Функция для выбора папки
+    currentFolder: File? = null, // Текущая папка
+    documentFiles: List<DocumentFileInfo> = emptyList(), // DocumentFile список
+    onDocumentFileClick: (DocumentFileInfo) -> Unit = {} // Обработка клика на DocumentFile
 ) {
     ModalDrawerSheet(modifier = modifier) {
         // Заголовок
@@ -48,8 +52,15 @@ fun AppDrawer(
 
         // Список файлов с прокруткой
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(files) { file ->
-                FileListItem(file = file, onClick = { onFileClick(file) })
+            // Отображаем DocumentFile если есть, иначе обычные файлы
+            if (documentFiles.isNotEmpty()) {
+                items(documentFiles) { docFile ->
+                    DocumentFileListItem(docFile = docFile, onClick = { onDocumentFileClick(docFile) })
+                }
+            } else {
+                items(files) { file ->
+                    FileListItem(file = file, onClick = { onFileClick(file) })
+                }
             }
         }
     }
@@ -75,6 +86,31 @@ fun FileListItem(
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = file.name,
+            style = MaterialTheme.typography.bodyLarge
+        )
+    }
+}
+
+@Composable
+fun DocumentFileListItem(
+    docFile: DocumentFileInfo,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = if (docFile.isDirectory) Icons.Default.Folder else Icons.Default.Description,
+            contentDescription = if (docFile.isDirectory) "Папка" else "Файл",
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = docFile.name,
             style = MaterialTheme.typography.bodyLarge
         )
     }
